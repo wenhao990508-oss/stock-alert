@@ -1,1 +1,23 @@
 name: 股票訊號提醒
+on:
+  schedule:
+    - cron: "40 6 * * 1-5"   # 台灣時間週一~五 14:40（收盤後）
+  workflow_dispatch:
+    inputs:
+      test:
+        description: "送測試通知（1=是）"
+        default: "0"
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python stock_alert.py
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          STOCKS: ${{ vars.STOCKS }}
+          TEST: ${{ github.event.inputs.test }}

@@ -1,1 +1,22 @@
 name: 盤中即時爆量提醒
+on:
+  schedule:
+    - cron: "40 0 * * 1-5"   # 台灣時間 08:40 啟動，程式自己等到 09:00 開盤
+  workflow_dispatch:
+concurrency:
+  group: realtime
+  cancel-in-progress: false
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python realtime.py
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          STOCKS: ${{ vars.STOCKS }}
